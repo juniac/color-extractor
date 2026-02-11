@@ -2,6 +2,10 @@
 
 Extract and deduplicate color values from text and files. CLI tool + Swift Package library.
 
+> Notes, text files, JSON, and source code—this is intended to extract randomly scattered color patterns, collect them, and organize them.
+> In a VSCode-compatible IDE, I created this because I was exhausted from manually copying theme colors from settings.json to reuse elsewhere.
+
+
 ## Features
 
 - **Extraction**: Hex, RGB, RGBA, HSL, HSLA, OKLCH, HWB, LAB, LCH, OKLAB
