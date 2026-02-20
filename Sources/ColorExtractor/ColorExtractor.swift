@@ -21,7 +21,7 @@ struct ColorExtractor: ParsableCommand {
         version: "1.0.0"
     )
 
-    @Option(name: .long, help: "Output format: json, toml, or clean")
+    @Option(name: .long, help: "Output format: json, toml, clean, or svg")
     var output: OutputFormatOption?
 
     @Option(name: .long, help: ArgumentHelp(
@@ -35,6 +35,8 @@ struct ColorExtractor: ParsableCommand {
 
     @Argument(help: "Files to extract colors from (reads from stdin if not provided)")
     var files: [String] = []
+
+    private var hasWrittenOutputFileInCurrentRun = false
 
     mutating func run() throws {
 
@@ -77,10 +79,12 @@ struct ColorExtractor: ParsableCommand {
         return input
     }
 
-    private func outputResult(_ result: String) {
+    private mutating func outputResult(_ result: String) {
         if let outputPath = outputFile {
             do {
-                if FileManager.default.fileExists(atPath: outputPath) {
+                let shouldAppend = hasWrittenOutputFileInCurrentRun && FileManager.default.fileExists(atPath: outputPath)
+
+                if shouldAppend {
                     // Append to existing file
                     let fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: outputPath))
                     fileHandle.seekToEndOfFile()
@@ -89,9 +93,10 @@ struct ColorExtractor: ParsableCommand {
                     }
                     try fileHandle.close()
                 } else {
-                    // Create new file
                     try result.write(toFile: outputPath, atomically: true, encoding: .utf8)
                 }
+
+                hasWrittenOutputFileInCurrentRun = true
             } catch {
                 Self.exit(withError: ColorExtractorError.fileWriteError(outputPath, error.localizedDescription))
             }
@@ -107,12 +112,14 @@ enum OutputFormatOption: String, ExpressibleByArgument {
     case json
     case toml
     case clean
+    case svg
 
     func toOutputFormat() -> OutputFormat {
         switch self {
         case .json: return .json
         case .toml: return .toml
         case .clean: return .clean
+        case .svg: return .svg
         }
     }
 }
