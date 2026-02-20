@@ -6,6 +6,7 @@ public enum OutputFormat {
     case json
     case toml
     case clean
+    case svg
 }
 
 /// Color output format for conversion
@@ -47,6 +48,8 @@ public struct OutputFormatter {
             return formatTOML(colors: colors, source: source)
         case .clean:
             return formatClean(colors: colors)
+        case .svg:
+            return formatSVG(colors: colors)
         }
     }
 
@@ -111,6 +114,120 @@ public struct OutputFormatter {
 
     private func formatClean(colors: [ExtractedColor]) -> String {
         return colors.map { formatColor($0) }.joined(separator: "\n")
+    }
+
+    private func formatSVG(colors: [ExtractedColor]) -> String {
+        let swatchSize = 120
+        let labelHeight = 28
+
+        guard !colors.isEmpty else {
+            return "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"120\" viewBox=\"0 0 120 120\"></svg>"
+        }
+
+        let orderedColors = sortBySimilarity(colors)
+        let count = orderedColors.count
+        let columns = max(1, Int(ceil(sqrt(Double(count)))))
+        let rows = Int(ceil(Double(count) / Double(columns)))
+
+        let width = max(120, columns * swatchSize)
+        let height = max(120, rows * (swatchSize + labelHeight))
+
+        var output = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"\(width)\" height=\"\(height)\" viewBox=\"0 0 \(width) \(height)\">\n"
+        output += "  <rect width=\"100%\" height=\"100%\" fill=\"#FFFFFF\"/>\n"
+
+        for (index, color) in orderedColors.enumerated() {
+            let row = index / columns
+            let column = index % columns
+            let x = column * swatchSize
+            let y = row * (swatchSize + labelHeight)
+            let value = formatColor(color)
+
+            output += "  <rect x=\"\(x)\" y=\"\(y)\" width=\"\(swatchSize)\" height=\"\(swatchSize)\" fill=\"\(value)\"/>\n"
+            output += "  <rect x=\"\(x)\" y=\"\(y + swatchSize)\" width=\"\(swatchSize)\" height=\"\(labelHeight)\" fill=\"#FFFFFF\"/>\n"
+            output += "  <text x=\"\(x + 8)\" y=\"\(y + swatchSize + 18)\" font-family=\"Menlo, monospace\" font-size=\"12\" fill=\"#111111\">\(value)</text>\n"
+        }
+
+        output += "</svg>"
+        return output
+    }
+
+    private func sortBySimilarity(_ colors: [ExtractedColor]) -> [ExtractedColor] {
+        let sortable = colors.compactMap { color -> (ExtractedColor, Double, Double, Double)? in
+            guard let hex = ColorParser.parseHex(color.normalized) else {
+                return nil
+            }
+            return (color, Double(hex.red) / 255.0, Double(hex.green) / 255.0, Double(hex.blue) / 255.0)
+        }
+
+        guard !sortable.isEmpty else {
+            return colors
+        }
+
+        let unsortable = colors.filter { ColorParser.parseHex($0.normalized) == nil }
+        var remaining = sortable
+        var sorted: [ExtractedColor] = []
+
+        remaining.sort { lhs, rhs in
+            let lhsHue = hue(r: lhs.1, g: lhs.2, b: lhs.3)
+            let rhsHue = hue(r: rhs.1, g: rhs.2, b: rhs.3)
+            return lhsHue < rhsHue
+        }
+
+        var current = remaining.removeFirst()
+        sorted.append(current.0)
+
+        while !remaining.isEmpty {
+            var nearestIndex = 0
+            var nearestDistance = Double.greatestFiniteMagnitude
+
+            for (index, candidate) in remaining.enumerated() {
+                let distance = colorDistance(
+                    r1: current.1, g1: current.2, b1: current.3,
+                    r2: candidate.1, g2: candidate.2, b2: candidate.3
+                )
+                if distance < nearestDistance {
+                    nearestDistance = distance
+                    nearestIndex = index
+                }
+            }
+
+            current = remaining.remove(at: nearestIndex)
+            sorted.append(current.0)
+        }
+
+        return sorted + unsortable
+    }
+
+    private func colorDistance(r1: Double, g1: Double, b1: Double, r2: Double, g2: Double, b2: Double) -> Double {
+        let dr = r1 - r2
+        let dg = g1 - g2
+        let db = b1 - b2
+        return dr * dr + dg * dg + db * db
+    }
+
+    private func hue(r: Double, g: Double, b: Double) -> Double {
+        let maxValue = max(r, g, b)
+        let minValue = min(r, g, b)
+        let delta = maxValue - minValue
+
+        if delta == 0 {
+            return 0
+        }
+
+        var result: Double
+        if maxValue == r {
+            result = ((g - b) / delta).truncatingRemainder(dividingBy: 6)
+        } else if maxValue == g {
+            result = ((b - r) / delta) + 2
+        } else {
+            result = ((r - g) / delta) + 4
+        }
+
+        result *= 60
+        if result < 0 {
+            result += 360
+        }
+        return result
     }
 
     // MARK: - Color Format Conversion
