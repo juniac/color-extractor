@@ -64,3 +64,6 @@ fastlane/test_output
 
 .claude
 CLAUDE.md
+
+
+.vscode/
