@@ -4,14 +4,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "ColorExtractor",
+    name: "Colormaton",
     platforms: [
         .macOS(.v13),
         .iOS(.v16)
     ],
     products: [
-        .executable(name: "color-extractor", targets: ["ColorExtractor"]),
-        .library(name: "ColorExtractorCore", targets: ["ColorExtractorCore"])
+        .executable(name: "colormaton", targets: ["ColormatonCLI"]),
+        .library(name: "Colormaton", targets: ["Colormaton"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0")
@@ -19,23 +19,23 @@ let package = Package(
     targets: [
         // Core library - platform-agnostic color extraction logic
         .target(
-            name: "ColorExtractorCore",
+            name: "Colormaton",
             dependencies: []
         ),
 
         // CLI executable
         .executableTarget(
-            name: "ColorExtractor",
+            name: "ColormatonCLI",
             dependencies: [
-                "ColorExtractorCore",
+                "Colormaton",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]
         ),
 
         // Tests
         .testTarget(
-            name: "ColorExtractorCoreTests",
-            dependencies: ["ColorExtractorCore"]
+            name: "ColormatonTests",
+            dependencies: ["Colormaton"]
         )
     ]
 )

@@ -1,7 +1,7 @@
 import XCTest
-@testable import ColorExtractorCore
+@testable import Colormaton
 
-final class ColorExtractorTests: XCTestCase {
+final class ColormatonTests: XCTestCase {
     var extractor: ColorExtractorEngine!
 
     override func setUp() {

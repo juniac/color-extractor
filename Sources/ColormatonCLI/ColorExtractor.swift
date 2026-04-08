@@ -1,22 +1,22 @@
 import Foundation
 import ArgumentParser
-import ColorExtractorCore
+import Colormaton
 
 @available(macOS 13.0, iOS 16.0, *)
 @main
-struct ColorExtractor: ParsableCommand {
+struct ColormatonCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "color-extractor",
+        commandName: "colormaton",
         abstract: "Extract color values from text files and strings",
         discussion: """
         Extracts and deduplicates color values from text input.
         Supports multiple color formats: Hex, RGB, HSL, OKLCH.
 
         EXAMPLES:
-            color-extractor style.css
-            echo "color: #FF5733" | color-extractor
-            color-extractor --format rgb --output clean file.txt
-            color-extractor --output json --format swiftui colors.css
+            colormaton style.css
+            echo "color: #FF5733" | colormaton
+            colormaton --format rgb --output clean file.txt
+            colormaton --output json --format swiftui colors.css
         """,
         version: "1.0.0"
     )
@@ -71,7 +71,7 @@ struct ColorExtractor: ParsableCommand {
                         outputResult("\n---\n")
                     }
                 } catch {
-                    throw ColorExtractorError.fileReadError(file, error.localizedDescription)
+                    throw ColormatonError.fileReadError(file, error.localizedDescription)
                 }
             }
         }
@@ -109,7 +109,7 @@ struct ColorExtractor: ParsableCommand {
 
                 hasWrittenOutputFileInCurrentRun = true
             } catch {
-                Self.exit(withError: ColorExtractorError.fileWriteError(outputPath, error.localizedDescription))
+                Self.exit(withError: ColormatonError.fileWriteError(outputPath, error.localizedDescription))
             }
         } else {
             print(result)
@@ -171,7 +171,7 @@ enum ColorFormatOption: String, ExpressibleByArgument, CaseIterable {
 
 // MARK: - Errors
 
-enum ColorExtractorError: LocalizedError {
+enum ColormatonError: LocalizedError {
     case fileReadError(String, String)
     case fileWriteError(String, String)
 

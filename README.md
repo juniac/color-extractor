@@ -1,4 +1,4 @@
-# ColorExtractor
+# Colormaton
 
 Extract and deduplicate color values from text and files. CLI tool + Swift Package library.
 
@@ -34,7 +34,7 @@ Extract and deduplicate color values from text and files. CLI tool + Swift Packa
 
 ```bash
 swift build -c release
-cp .build/release/color-extractor /usr/local/bin/
+cp .build/release/colormaton /usr/local/bin/
 ```
 
 ### Swift Package
@@ -42,11 +42,11 @@ cp .build/release/color-extractor /usr/local/bin/
 ```swift
 // Package.swift
 dependencies: [
-    .package(url: "https://github.com/juniac/color-extractor", from: "1.0.0")
+    .package(url: "https://github.com/juniac/colormaton", from: "1.0.0")
 ]
 ```
 
-Add `ColorExtractorCore` to your target dependencies.
+Add `Colormaton` to your target dependencies.
 
 ## Usage
 
@@ -55,27 +55,27 @@ Add `ColorExtractorCore` to your target dependencies.
 **Extract from stdin:**
 
 ```bash
-echo "Primary: #FF5733, Secondary: rgb(100, 200, 50)" | color-extractor
+echo "Primary: #FF5733, Secondary: rgb(100, 200, 50)" | colormaton
 ```
 
 **Extract from files:**
 
 ```bash
-color-extractor style.css
-color-extractor index.html style.css theme.scss
+colormaton style.css
+colormaton index.html style.css theme.scss
 ```
 
 **Extract from pipe:**
 
 ```bash
-cat README.md | color-extractor
+cat README.md | colormaton
 ```
 
 **Show help:**
 
 ```bash
-color-extractor --help
-color-extractor -h
+colormaton --help
+colormaton -h
 ```
 
 ### Output Formats
@@ -83,7 +83,7 @@ color-extractor -h
 **JSON output:**
 
 ```bash
-color-extractor --output json style.css
+colormaton --output json style.css
 ```
 
 Output:
@@ -108,13 +108,13 @@ Follows the [Design Tokens (DTCG)](https://design-tokens.github.io/community-gro
 **TOML output:**
 
 ```bash
-color-extractor --output toml style.css
+colormaton --output toml style.css
 ```
 
 **Clean output (colors only):**
 
 ```bash
-color-extractor --output clean style.css
+colormaton --output clean style.css
 ```
 
 Output:
@@ -130,28 +130,28 @@ Output:
 **Convert to RGB:**
 
 ```bash
-echo "#FF5733" | color-extractor --format rgb --output clean
+echo "#FF5733" | colormaton --format rgb --output clean
 # Output: rgb(255, 87, 51)
 ```
 
 **Convert to HSL:**
 
 ```bash
-echo "#FF5733" | color-extractor --format hsl --output clean
+echo "#FF5733" | colormaton --format hsl --output clean
 # Output: hsl(10, 100%, 60%)
 ```
 
 **Convert to SwiftUI Color:**
 
 ```bash
-echo "#FF5733" | color-extractor --format swiftui --output clean
+echo "#FF5733" | colormaton --format swiftui --output clean
 # Output: Color(red: 1.000, green: 0.341, blue: 0.200)
 ```
 
 **Convert to UIColor:**
 
 ```bash
-echo "#FF5733" | color-extractor --format uicolor --output clean
+echo "#FF5733" | colormaton --format uicolor --output clean
 # Output: UIColor(red: 1.000, green: 0.341, blue: 0.200, alpha: 1.0)
 ```
 
@@ -180,8 +180,8 @@ _Swift/iOS/macOS Formats:_
 ### Save to File
 
 ```bash
-color-extractor --output-file colors.txt style.css
-color-extractor --output json --output-file colors.json style.css
+colormaton --output-file colors.txt style.css
+colormaton --output json --output-file colors.json style.css
 ```
 
 ### Advanced Color Space Conversions
@@ -189,21 +189,21 @@ color-extractor --output json --output-file colors.json style.css
 **Convert to OKLCH (perceptually uniform):**
 
 ```bash
-echo "#FF5733" | color-extractor --format oklch --output clean
+echo "#FF5733" | colormaton --format oklch --output clean
 # Output: oklch(68.04% 0.2100 33.69)
 ```
 
 **Convert to LAB:**
 
 ```bash
-echo "#FF5733" | color-extractor --format lab --output clean
+echo "#FF5733" | colormaton --format lab --output clean
 # Output: lab(60.18% 62.06 54.34)
 ```
 
 **Convert to HWB:**
 
 ```bash
-echo "#FF5733" | color-extractor --format hwb --output clean
+echo "#FF5733" | colormaton --format hwb --output clean
 # Output: hwb(11 20% 0%)
 ```
 
@@ -213,7 +213,7 @@ echo "#FF5733" | color-extractor --format hwb --output clean
 # Extract from file and show in all formats
 for format in hex rgb hsl hwb lab lch oklab oklch; do
   echo "=== $format ==="
-  color-extractor --format $format --output clean colors.css
+  colormaton --format $format --output clean colors.css
 done
 ```
 
@@ -221,21 +221,21 @@ done
 
 ```bash
 # Extract colors, convert to SwiftUI format, output as JSON, save to file
-color-extractor --format swiftui --output json --output-file colors.json style.css
+colormaton --format swiftui --output json --output-file colors.json style.css
 
 # Extract from multiple files, convert to OKLCH, clean output
-color-extractor --format oklch --output clean *.css
+colormaton --format oklch --output clean *.css
 
 # Convert theme colors to LAB color space for color science work
-color-extractor --format lab --output json theme.json
+colormaton --format lab --output json theme.json
 ```
 
 ### Swift Library Examples
 
 ```swift
-import ColorExtractorCore
+import Colormaton
 
-let extractor = ColorExtractorEngine()
+let extractor = ColormatonEngine()
 
 // Extract from string
 let text = "Button color is #007bff and text is rgb(255, 255, 255)"
@@ -306,7 +306,7 @@ Colors are automatically deduplicated by:
 Example:
 
 ```bash
-echo "#FF5733 #ff5733 rgb(255, 87, 51)" | color-extractor
+echo "#FF5733 #ff5733 rgb(255, 87, 51)" | colormaton
 # Output: Found 1 unique color
 ```
 
@@ -317,7 +317,7 @@ echo "#FF5733 #ff5733 rgb(255, 87, 51)" | color-extractor
 swift build
 
 # Run during development
-swift run color-extractor [arguments]
+swift run colormaton [arguments]
 
 # Run tests
 swift test
@@ -330,11 +330,11 @@ swift package clean
 
 ```
 Sources/
-  ColorExtractorCore/   # Library (platform-agnostic)
+  Colormaton/   # Library (platform-agnostic)
     - Color models, regex patterns
     - Parsing, normalization, deduplication
     - Color space conversions (RGB, XYZ, LAB, LCH, OKLAB, OKLCH, HWB, HSL)
-  ColorExtractor/       # CLI executable
+  ColormatonCLI/       # CLI executable
     - ArgumentParser integration
     - File I/O, stdin handling
     - Output formatting (standard, JSON, TOML, clean)

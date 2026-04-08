@@ -35,7 +35,7 @@ final class CLIOutputFileBehaviorTests: XCTestCase {
     private func runCLI(arguments: [String]) throws {
         let process = Process()
         let currentDirectory = FileManager.default.currentDirectoryPath
-        let executablePath = currentDirectory + "/.build/debug/color-extractor"
+        let executablePath = currentDirectory + "/.build/debug/colormaton"
         process.executableURL = URL(fileURLWithPath: executablePath)
         process.arguments = arguments
 

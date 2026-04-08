@@ -1,5 +1,5 @@
 import XCTest
-@testable import ColorExtractorCore
+@testable import Colormaton
 
 @available(macOS 13.0, iOS 16.0, *)
 final class OutputFormatterTests: XCTestCase {
