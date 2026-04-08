@@ -31,10 +31,12 @@ public enum ColorOutputFormat: String, CaseIterable {
 public struct OutputFormatter {
     private let format: OutputFormat
     private let colorFormat: ColorOutputFormat?
+    private let svgColumns: Int?
 
-    public init(format: OutputFormat, colorFormat: ColorOutputFormat? = nil) {
+    public init(format: OutputFormat, colorFormat: ColorOutputFormat? = nil, svgColumns: Int? = nil) {
         self.format = format
         self.colorFormat = colorFormat
+        self.svgColumns = svgColumns
     }
 
     /// Format colors for output
@@ -124,9 +126,8 @@ public struct OutputFormatter {
             return "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"120\" viewBox=\"0 0 120 120\"></svg>"
         }
 
-        let orderedColors = sortBySimilarity(colors)
-        let count = orderedColors.count
-        let columns = max(1, Int(ceil(sqrt(Double(count)))))
+        let count = colors.count
+        let columns = svgColumns.map { max(1, $0) } ?? max(1, Int(ceil(sqrt(Double(count)))))
         let rows = Int(ceil(Double(count) / Double(columns)))
 
         let width = max(120, columns * swatchSize)
@@ -135,7 +136,7 @@ public struct OutputFormatter {
         var output = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"\(width)\" height=\"\(height)\" viewBox=\"0 0 \(width) \(height)\">\n"
         output += "  <rect width=\"100%\" height=\"100%\" fill=\"#FFFFFF\"/>\n"
 
-        for (index, color) in orderedColors.enumerated() {
+        for (index, color) in colors.enumerated() {
             let row = index / columns
             let column = index % columns
             let x = column * swatchSize

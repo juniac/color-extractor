@@ -33,6 +33,12 @@ struct ColorExtractor: ParsableCommand {
     @Option(name: .long, help: ArgumentHelp("Save output to file", valueName: "path"))
     var outputFile: String?
 
+    @Flag(name: .long, help: "Sort colors alphabetically by their hex value")
+    var sort: Bool = false
+
+    @Option(name: .long, help: ArgumentHelp("Number of colors per row in SVG output", valueName: "n"))
+    var cols: Int?
+
     @Argument(help: "Files to extract colors from (reads from stdin if not provided)")
     var files: [String] = []
 
@@ -43,12 +49,12 @@ struct ColorExtractor: ParsableCommand {
         let extractor = ColorExtractorEngine()
         let outputFormat = output?.toOutputFormat() ?? .standard
         let colorFormat = format?.toColorOutputFormat()
-        let formatter = OutputFormatter(format: outputFormat, colorFormat: colorFormat)
+        let formatter = OutputFormatter(format: outputFormat, colorFormat: colorFormat, svgColumns: cols)
 
         if files.isEmpty {
             // Read from stdin
             let input = readStdin()
-            let colors = extractor.extract(from: input)
+            let colors = sorted(extractor.extract(from: input))
             let result = formatter.format(colors: colors, source: "stdin")
             outputResult(result)
         } else {
@@ -56,7 +62,7 @@ struct ColorExtractor: ParsableCommand {
             for file in files {
                 do {
                     let content = try String(contentsOfFile: file, encoding: .utf8)
-                    let colors = extractor.extract(from: content)
+                    let colors = sorted(extractor.extract(from: content))
                     let result = formatter.format(colors: colors, source: file)
                     outputResult(result)
 
@@ -69,6 +75,11 @@ struct ColorExtractor: ParsableCommand {
                 }
             }
         }
+    }
+
+    private func sorted(_ colors: [ExtractedColor]) -> [ExtractedColor] {
+        guard sort else { return colors }
+        return colors.sorted { $0.normalized < $1.normalized }
     }
 
     private func readStdin() -> String {
